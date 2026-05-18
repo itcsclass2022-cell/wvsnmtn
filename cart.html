@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shopping Cart — WVS & MTN</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=Permanent+Marker&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream-bg: #f5f3f0;
+      --black: #1a1a1a;
+      --dark-gray: #3a3a3a;
+      --light-gray: #d4d0c8;
+      --red: #d32f2f;
+      --accent: #4a4a4a;
+      --border-radius: 10px;
+      --transition: all 0.3s ease;
+      --spacing-xs: 8px;
+      --spacing-sm: 16px;
+      --spacing-md: 24px;
+      --spacing-lg: 40px;
+      --spacing-xl: 60px;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background-color: var(--cream-bg);
+      color: var(--black);
+      line-height: 1.6;
+      border-radius: 10px;
+    }
+
+    .cart-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-lg);
+    }
+
+    .cart-header {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .cart-header h1 {
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: var(--spacing-md);
+      font-family: 'Bebas Neue', sans-serif;
+    }
+
+    .cart-layout {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: var(--spacing-xl);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    @media (max-width: 968px) {
+      .cart-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .empty-cart {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: var(--spacing-xl) var(--spacing-lg);
+      background: white;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--light-gray);
+    }
+
+    .empty-cart h3 {
+      font-size: 24px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .empty-cart p {
+      color: var(--accent);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .empty-cart .btn-primary {
+      display: inline-block;
+      padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    .cart-items-section {
+      background: white;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--light-gray);
+      overflow: hidden;
+    }
+
+    .cart-items-header {
+      padding: var(--spacing-lg);
+      border-bottom: 2px solid var(--light-gray);
+      background: #fafafa;
+      font-weight: 700;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr auto;
+      gap: var(--spacing-md);
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .cart-items-header {
+        display: none;
+      }
+    }
+
+    .cart-item {
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid var(--light-gray);
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr auto;
+      gap: var(--spacing-md);
+      align-items: center;
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 768px) {
+      .cart-item {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .item-details h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .item-variant {
+      font-size: 13px;
+      color: var(--accent);
+      margin: 4px 0;
+    }
+
+    .item-variant-label {
+      font-weight: 600;
+      color: var(--dark-gray);
+    }
+
+    .item-price {
+      text-align: right;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .item-price {
+        text-align: left;
+      }
+    }
+
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+      background: #f9f9f9;
+      border-radius: 24px;
+      padding: 4px 8px;
+    }
+
+    @media (max-width: 768px) {
+      .qty-controls {
+        justify-content: flex-start;
+        width: fit-content;
+      }
+    }
+
+    .qty-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: var(--black);
+      color: white;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .qty-btn:hover {
+      background: var(--dark-gray);
+    }
+
+    .qty-btn.remove {
+      background: var(--red);
+    }
+
+    .qty-btn.remove:hover {
+      background: #b71c1c;
+    }
+
+    .qty-display {
+      width: 30px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .order-summary {
+      position: sticky;
+      top: var(--spacing-lg);
+      height: fit-content;
+      background: white;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-lg);
+    }
+
+    .summary-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 2px solid var(--light-gray);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-md);
+      font-size: 14px;
+    }
+
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: var(--spacing-lg);
+      padding-top: var(--spacing-md);
+      border-top: 2px solid var(--light-gray);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .summary-total .amount {
+      color: var(--red);
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .checkout-section {
+      grid-column: 1 / -1;
+      background: white;
+      border: 1px solid var(--light-gray);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-lg);
+      margin-top: var(--spacing-xl);
+    }
+
+    .section-header {
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 2px solid var(--light-gray);
+    }
+
+    .section-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .section-header p {
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-grid.full {
+      grid-template-columns: 1fr;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--dark-gray);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: var(--spacing-sm);
+      border: 1.5px solid var(--light-gray);
+      border-radius: var(--border-radius);
+      font-family: inherit;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--black);
+      box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: var(--spacing-md);
+      margin-top: 12px;
+    }
+
+    .payment-option {
+      padding: var(--spacing-sm);
+      border: 2px solid var(--light-gray);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition);
+      background: white;
+    }
+
+    .payment-option:hover {
+      border-color: var(--black);
+      background: #fafafa;
+    }
+
+    .payment-option.selected {
+      border-color: var(--black);
+      background: var(--black);
+      color: white;
+    }
+
+    .payment-option-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .payment-option-text {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .checkout-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-lg);
+    }
+
+    @media (max-width: 768px) {
+      .checkout-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: var(--black);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--dark-gray);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: var(--spacing-md) var(--spacing-lg);
+      background: transparent;
+      color: var(--black);
+      border: 2px solid var(--black);
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--light-gray);
+    }
+
+    .btn-secondary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .success-message {
+      grid-column: 1 / -1;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: var(--border-radius);
+      padding: var(--spacing-lg);
+      text-align: center;
+      color: #155724;
+      font-weight: 600;
+      display: none;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .cart-header h1 {
+        font-size: 28px;
+      }
+
+      .section-header h2 {
+        font-size: 22px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ANNOUNCEMENT BANNER -->
+  <div class="announcement-banner">
+    Extra 25% off select items. <a href="products.html">Shop Sale</a>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
+      <button style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px 8px;" onclick="window.history.back()" title="Back">←</button>
+    </div>
+    <a href="index.html" class="logo">
+      <img src="image/logo.png" alt="WVS & MTN Logo" class="logo-img">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="products.html">Shop</a></li>
+    </ul>
+    <div class="navbar-icons">
+      <button class="icon-btn search-toggle" id="searchToggle" title="Search" aria-label="Toggle search">🔍︎</button>
+      <a href="cart.html" class="cart-link">
+        🛒 <span class="cart-count" id="cartCount">0</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="search-overlay" id="searchOverlay" aria-hidden="true">
+    <div class="search-inner">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Search products, categories..."
+        autocomplete="off"
+        aria-label="Search"
+      />
+      <button class="search-close" id="searchClose" aria-label="Close search">✕</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-content">
+      <a href="index.html">Home</a>
+      <a href="products.html">Shop</a>
+      <a href="cart.html">Cart</a>
+    </div>
+  </div>
+
+  <!-- CART CONTENT -->
+  <div class="cart-container">
+    <div class="cart-header">
+      <h1>🛒 Shopping Cart</h1>
+    </div>
+
+    <!-- CART ITEMS + SUMMARY -->
+    <div id="cartContent">
+      <!-- Will be populated by JavaScript -->
+    </div>
+
+    <!-- CUSTOMER INFO FORM -->
+    <div class="checkout-section" id="checkoutForm" style="display: none;">
+      <div class="section-header">
+        <h2>Delivery Information</h2>
+        <p>Please provide your details for order delivery</p>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="custName" placeholder="Juan dela Cruz" required />
+        </div>
+        <div class="form-group">
+          <label>Contact Number *</label>
+          <input type="tel" id="custPhone" placeholder="09XX XXX XXXX" required />
+        </div>
+      </div>
+
+      <div class="form-grid full">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="custEmail" placeholder="juan@email.com" />
+        </div>
+      </div>
+
+      <div class="form-grid full">
+        <div class="form-group">
+          <label>Delivery Address *</label>
+          <textarea id="custAddress" placeholder="Street, Barangay, City, Province" required></textarea>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Payment Method *</label>
+        <div class="payment-methods" id="paymentMethods">
+          <div class="payment-option" onclick="selectPayment(this, 'GCash')">
+            <div class="payment-option-icon">📱</div>
+            <div class="payment-option-text">GCash</div>
+          </div>
+          <div class="payment-option" onclick="selectPayment(this, 'COD')">
+            <div class="payment-option-icon">🚚</div>
+            <div class="payment-option-text">Cash on Delivery</div>
+          </div>
+          <div class="payment-option" onclick="selectPayment(this, 'Bank Transfer')">
+            <div class="payment-option-icon">🏦</div>
+            <div class="payment-option-text">Bank Transfer</div>
+          </div>
+        </div>
+        <input type="hidden" id="payMethod" />
+      </div>
+
+      <div class="form-grid full">
+        <div class="form-group">
+          <label>Special Instructions (Optional)</label>
+          <textarea id="custNotes" placeholder="Any special requests or delivery instructions..."></textarea>
+        </div>
+      </div>
+
+      <div class="success-message" id="successMsg">
+        ✅ Order placed successfully! Check your email for confirmation.
+      </div>
+
+      <div class="checkout-actions">
+        <button class="btn-secondary" onclick="continueShopping()">← Continue Shopping</button>
+        <button class="btn-primary" onclick="submitOrder()">Place Order →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer-enhanced">
+    <div class="footer-content">
+      <div class="footer-column footer-logo-section">
+        <div class="footer-logo">WVS<span>&</span>MTN Products</div>
+        <div class="footer-contact">
+          <p>📍 Coastline Outdoor, Tuburan, Tunga-tunga Maasin City, Southern Leyte</p>
+          <p>📍 Buendia Tunga-tunga Maasin City, Southern Leyte</p>
+          <p>📍 Langyaw Siargao, Siargao Island</p>
+        </div>
+      </div>
+      
+      <div class="footer-column">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="products.html?cat=surf">Surf Gear</a></li>
+          <li><a href="products.html?cat=bags">Bags & Packs</a></li>
+          <li><a href="products.html?cat=apparel">Apparel</a></li>
+          <li><a href="products.html?cat=outdoor">Outdoor Gear</a></li>
+          <li><a href="products.html">View All Products</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column">
+        <h4>WVS & MTN</h4>
+        <ul>
+          <li><a href="index.html#about">About Us</a></li>
+          <li><a href="https://www.facebook.com/WVSMTN" target="_blank">Our Story</a></li>
+          <li><a href="index.html#values">Sustainability</a></li>
+          <li><a href="https://www.facebook.com/WVSMTN" target="_blank">Contact Us</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column">
+        <h4>Follow Us</h4>
+        <ul>
+          <li><a href="https://instagram.com/wvsmtn" target="_blank">📷 Instagram</a></li>
+          <li><a href="https://facebook.com/wvsmtn" target="_blank">🅕 Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer-divider"></div>
+    
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 WVS & MTN Lifestyle Essentials. All rights reserved.</p>
+      <div class="footer-legal">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Refund Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/cart.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    function renderCart() {
+      const cart = getCart();
+      const contentEl = document.getElementById('cartContent');
+      const checkoutFormEl = document.getElementById('checkoutForm');
+
+      if (cart.length === 0) {
+        contentEl.innerHTML = `
+          <div class="empty-cart">
+            <div style="font-size:48px;margin-bottom:var(--spacing-md);">📭</div>
+            <h3>Your cart is empty</h3>
+            <p>Time to go shopping! Browse our collection and add some items.</p>
+            <a href="products.html" class="btn-primary">Continue Shopping</a>
+          </div>`;
+        checkoutFormEl.style.display = 'none';
+        return;
+      }
+
+      const itemsHTML = cart.map(item => `
+        <div class="cart-item">
+          <div class="item-details">
+            <h4>${item.name}</h4>
+            ${item.size ? `<div class="item-variant"><span class="item-variant-label">Size:</span> ${item.size}</div>` : ''}
+            ${item.color ? `<div class="item-variant"><span class="item-variant-label">Color:</span> ${item.color}</div>` : ''}
+          </div>
+          <div class="item-price">₱${item.price.toLocaleString()}</div>
+          <div class="item-price">₱${(item.price * item.qty).toLocaleString()}</div>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+            <span class="qty-display">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+            <button class="qty-btn remove" onclick="removeItem(${item.id})" title="Remove">✕</button>
+          </div>
+        </div>
+      `).join('');
+
+      const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      const tax = Math.round(subtotal * 0.12);
+      const total = subtotal + tax;
+
+      contentEl.innerHTML = `
+        <div class="cart-layout">
+          <div class="cart-items-section">
+            <div class="cart-items-header">
+              <div>Product</div>
+              <div style="text-align:right;">Unit Price</div>
+              <div style="text-align:right;">Total</div>
+              <div>Qty</div>
+            </div>
+            ${itemsHTML}
+          </div>
+
+          <div class="order-summary">
+            <div class="summary-title">Order Summary</div>
+            <div class="summary-row">
+              <span>Subtotal:</span>
+              <span>₱${subtotal.toLocaleString()}</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping:</span>
+              <span style="color:var(--red);">FREE</span>
+            </div>
+            <div class="summary-row">
+              <span>VAT (12%):</span>
+              <span>₱${tax.toLocaleString()}</span>
+            </div>
+            <div class="summary-total">
+              <span>Total</span>
+              <span class="amount">₱${total.toLocaleString()}</span>
+            </div>
+            <div style="margin-top:var(--spacing-lg);font-size:12px;color:var(--accent);text-align:center;">
+              ✓ Free delivery on all orders<br>
+              ✓ Easy returns within 30 days
+            </div>
+          </div>
+        </div>
+      `;
+
+      checkoutFormEl.style.display = 'block';
+      updateCartCount();
+    }
+
+    function changeQty(id, delta) {
+      const cart = getCart();
+      const item = cart.find(i => i.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) {
+        const idx = cart.indexOf(item);
+        cart.splice(idx, 1);
+      }
+      saveCart(cart);
+      renderCart();
+    }
+
+    function removeItem(id) {
+      if (confirm('Remove this item from cart?')) {
+        const cart = getCart().filter(i => i.id !== id);
+        saveCart(cart);
+        renderCart();
+      }
+    }
+
+    function selectPayment(element, method) {
+      document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+      element.classList.add('selected');
+      document.getElementById('payMethod').value = method;
+    }
+
+    function continueShopping() {
+      window.location.href = 'products.html';
+    }
+
+    function submitOrder() {
+      const cart = getCart();
+      if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+      }
+
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const email = document.getElementById('custEmail').value.trim();
+      const address = document.getElementById('custAddress').value.trim();
+      const payMethod = document.getElementById('payMethod').value;
+      const notes = document.getElementById('custNotes').value.trim();
+
+      if (!name || !phone || !address || !payMethod) {
+        alert('Please fill in all required fields (Name, Phone, Address, Payment Method)');
+        return;
+      }
+
+      const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      const tax = Math.round(subtotal * 0.12);
+      const total = subtotal + tax;
+
+      const order = {
+        id: 'ORD-' + Date.now(),
+        timestamp: new Date().toLocaleString('en-PH'),
+        name,
+        phone,
+        email: email || 'N/A',
+        address,
+        paymentMethod: payMethod,
+        notes,
+        items: cart,
+        subtotal,
+        tax,
+        total,
+        status: 'Pending'
+      };
+
+      let orders = JSON.parse(localStorage.getItem('wvsmtn_orders') || '[]');
+      orders.push(order);
+      localStorage.setItem('wvsmtn_orders', JSON.stringify(orders));
+
+      localStorage.setItem('wvs_cart', JSON.stringify([]));
+
+      document.getElementById('successMsg').classList.add('show');
+
+      document.querySelectorAll('.form-group input, .form-group select, .form-group textarea, .payment-option, .btn-primary, .btn-secondary').forEach(el => {
+        el.disabled = true;
+      });
+
+      setTimeout(() => {
+        alert('✅ Order submitted successfully!\n\nOrder ID: ' + order.id + '\n\nWVS & MTN will contact you soon to confirm.');
+        window.location.href = 'products.html';
+      }, 2000);
+    }
+
+    function toggleMenu() {
+      const mobileMenu = document.getElementById('mobileMenu');
+      mobileMenu.classList.toggle('active');
+    }
+
+    function updateCartCount() {
+      const cart = getCart();
+      const count = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+      document.getElementById('cartCount').textContent = count;
+    }
+
+    renderCart();
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileMenuLinks = document.querySelectorAll('.mobile-menu-content a');
+      mobileMenuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          document.getElementById('mobileMenu').classList.remove('active');
+        });
+      });
+      updateCartCount();
+    });
+  </script>
+
+  <script>
+    (function() {
+      const toggle = document.getElementById('searchToggle');
+      const overlay = document.getElementById('searchOverlay');
+      const input = document.getElementById('searchInput');
+      const results = document.getElementById('searchResults');
+      const closeBtn = document.getElementById('searchClose');
+
+      // Create backdrop
+      const backdrop = document.createElement('div');
+      backdrop.className = 'search-backdrop';
+      document.body.appendChild(backdrop);
+
+      function openSearch() {
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        backdrop.classList.add('visible');
+        setTimeout(() => input.focus(), 50);
+      }
+
+      function closeSearch() {
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        backdrop.classList.remove('visible');
+        input.value = '';
+        results.innerHTML = '';
+      }
+
+      toggle.addEventListener('click', () => {
+        overlay.classList.contains('open') ? closeSearch() : openSearch();
+      });
+
+      closeBtn.addEventListener('click', closeSearch);
+      backdrop.addEventListener('click', closeSearch);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSearch();
+        if (e.key === 'Enter' && overlay.classList.contains('open') && input.value.trim()) {
+          window.location.href = 'products.html?search=' +
+            encodeURIComponent(input.value.trim());
+        }
+      });
+
+      function highlightMatch(text, query) {
+        if (!query) return text;
+        const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+      }
+
+      function getProducts() {
+        try {
+          return JSON.parse(localStorage.getItem('wvs_products') || '[]');
+        } catch(e) {
+          return [];
+        }
+      }
+
+      const CATEGORIES = [
+        { name: 'Surf', icon: '🏄', href: 'products.html?cat=surf' },
+        { name: 'Bags', icon: '🎒', href: 'products.html?cat=bags' },
+        { name: 'Apparel', icon: '👕', href: 'products.html?cat=apparel' },
+        { name: 'Outdoor', icon: '🏕️', href: 'products.html?cat=outdoor' },
+      ];
+
+      function renderDefaultState() {
+        results.innerHTML = '<div style="padding:0.75rem 2rem 0.25rem;">' +
+          '<span style="font-size:0.75rem;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;">Categories</span></div>' +
+          CATEGORIES.map(c =>
+            `<a class="search-category-chip" href="${c.href}">
+              <span>${c.icon}</span>
+              <span>${c.name}</span>
+            </a>`
+          ).join('');
+      }
+
+      function search(query) {
+        const q = query.trim().toLowerCase();
+        if (!q) { renderDefaultState(); return; }
+
+        const products = getProducts();
+        const matched = products.filter(p =>
+          (p.name && p.name.toLowerCase().includes(q)) ||
+          ((p.category || p.cat) && String(p.category || p.cat).toLowerCase().includes(q)) ||
+          ((p.description || p.desc) && String(p.description || p.desc).toLowerCase().includes(q))
+        ).slice(0, 6);
+
+        const matchedCats = CATEGORIES.filter(c =>
+          c.name.toLowerCase().includes(q)
+        );
+
+        if (matched.length === 0 && matchedCats.length === 0) {
+          results.innerHTML = `<div class="search-no-results">
+            No results for "<strong>${query}</strong>"<br>
+            <small>Try searching a category: Surf, Bags, Apparel, Outdoor</small>
+          </div>`;
+          return;
+        }
+
+        let html = '';
+
+        if (matchedCats.length > 0) {
+          html += '<div style="padding:0.75rem 2rem 0.25rem;">' +
+            '<span style="font-size:0.75rem;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;">Categories</span></div>' +
+            matchedCats.map(c =>
+              `<a class="search-category-chip" href="${c.href}">
+                <span>${c.icon}</span>
+                <span>${highlightMatch(c.name, query)}</span>
+              </a>`
+            ).join('');
+        }
+
+        if (matched.length > 0) {
+          html += '<div style="padding:0.75rem 2rem 0.25rem;">' +
+            '<span style="font-size:0.75rem;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;">Products</span></div>' +
+            matched.map(p => {
+              const thumb = (p.images && p.images[0])
+                ? `<img class="search-result-thumb" src="${p.images[0]}" alt="${p.name}" />`
+                : `<div class="search-result-thumb-placeholder">🛍️</div>`;
+              return `<a class="search-result-item"
+                href="products.html?search=${encodeURIComponent(p.name)}">
+                ${thumb}
+                <div class="search-result-info">
+                  <div class="search-result-name">${highlightMatch(p.name, query)}</div>
+                  <div class="search-result-meta">${p.category || p.cat || 'Product'}</div>
+                </div>
+                <span class="search-result-price">₱${Number(p.price).toLocaleString()}</span>
+              </a>`;
+            }).join('') +
+            `<a class="search-result-item"
+              href="products.html?search=${encodeURIComponent(query)}"
+              style="border-top:1px solid var(--border);color:var(--accent);">
+              <div class="search-result-thumb-placeholder">🔍</div>
+              <div class="search-result-info">
+                <div class="search-result-name">See all results for "${query}"</div>
+              </div>
+            </a>`;
+        }
+
+        results.innerHTML = html;
+      }
+
+      input.addEventListener('input', (e) => search(e.target.value));
+
+      // Show default categories on open
+      renderDefaultState();
+    })();
+  </script>
+</body>
+</html>
